@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Story Spark</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'EB Garamond', Georgia, serif; background: #0a0a0a; color: #e8e4dc; min-height: 100vh; padding: 5rem 2rem 6rem; }
+    .wrap { max-width: 780px; margin: 0 auto; }
+    .eyebrow { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #444; text-align: center; margin-bottom: 1.2rem; animation: fadeUp 0.8s ease both; }
+    .title { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(40px, 8vw, 72px); font-weight: 400; line-height: 1.05; text-align: center; color: #f0ece4; margin-bottom: 0.5rem; animation: fadeUp 0.8s 0.1s ease both; }
+    .title em { font-style: italic; color: #b8a98a; }
+    .subtitle { font-size: 17px; color: #444; text-align: center; font-style: italic; margin-bottom: 4rem; animation: fadeUp 0.8s 0.2s ease both; }
+    .divider { width: 40px; height: 1px; background: #222; margin: 0 auto 4rem; animation: fadeUp 0.8s 0.3s ease both; }
+    .input-section { animation: fadeUp 0.8s 0.4s ease both; }
+
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 2.5rem; }
+    @media(max-width:560px){ .row2 { grid-template-columns: 1fr; gap: 1.8rem; } }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #333; }
+
+    .field input, .field textarea {
+      background: transparent; border: none; border-bottom: 1px solid #1e1e1e;
+      color: #e8e4dc; font-family: 'EB Garamond', Georgia, serif;
+      font-size: 18px; line-height: 1.7; padding: 0.6rem 0 0.8rem;
+      outline: none; transition: border-color 0.4s; width: 100%;
+    }
+    .field textarea { resize: none; min-height: 80px; }
+    .field input::placeholder, .field textarea::placeholder { color: #2a2a2a; font-style: italic; }
+    .field input:focus, .field textarea:focus { border-bottom-color: #555; }
+
+    .full-field { margin-bottom: 2.5rem; }
+
+    .generate-btn { display: block; margin: 3rem auto 0; background: transparent; border: 1px solid #1e1e1e; color: #666; font-family: 'EB Garamond', Georgia, serif; font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; padding: 16px 56px; cursor: pointer; transition: border-color 0.4s, color 0.4s; }
+    .generate-btn:hover { border-color: #666; color: #e8e4dc; }
+    .generate-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+    .err { text-align: center; color: #8a3a2a; font-size: 14px; margin-top: 1.2rem; font-style: italic; display: none; }
+    .loading-state { text-align: center; padding: 5rem 0; display: none; }
+    .loading-text { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: #333; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:0.2;} 50%{opacity:1;} }
+
+    .results-wrap { display: none; animation: fadeUp 0.8s ease both; }
+
+    .story-header { padding: 3.5rem 0 0; border-top: 1px solid #111; margin-top: 2rem; }
+
+    .story-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2rem; }
+    .pill { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #444; border: 1px solid #1a1a1a; padding: 4px 14px; border-radius: 99px; }
+
+    .story-title-el { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(26px, 5vw, 44px); font-weight: 400; color: #f0ece4; line-height: 1.2; margin-bottom: 3rem; }
+    .story-title-el em { font-style: italic; color: #b8a98a; }
+
+    .story-body { font-size: 18px; line-height: 2.2; color: #777; letter-spacing: 0.01em; margin-bottom: 3rem; }
+
+    .moral-box { border-top: 1px solid #111; padding-top: 2rem; margin-bottom: 1rem; }
+    .moral-eyebrow { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: #333; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 10px; }
+    .moral-dot { width: 4px; height: 4px; border-radius: 50%; background: #333; }
+    .moral-text { font-size: 17px; font-style: italic; color: #555; line-height: 1.8; }
+
+    .actions { display: flex; gap: 1.5rem; justify-content: center; margin-top: 3.5rem; border-top: 1px solid #111; padding-top: 3rem; flex-wrap: wrap; }
+    .new-btn { background: transparent; border: 1px solid #1e1e1e; color: #555; font-family: 'EB Garamond', Georgia, serif; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; padding: 12px 32px; cursor: pointer; transition: border-color 0.4s, color 0.4s; }
+    .new-btn:hover { border-color: #666; color: #e8e4dc; }
+    .new-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    .reset-btn { background: transparent; border: none; color: #2a2a2a; font-family: 'EB Garamond', serif; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer; padding: 12px 0; transition: color 0.3s; }
+    .reset-btn:hover { color: #666; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">Children's Adventure</p>
+    <h1 class="title">Story <em>Spark</em></h1>
+    <p class="subtitle">plot aur moral do — kahani ban jaayegi</p>
+    <div class="divider"></div>
+
+    <div class="input-section" id="inputSection">
+
+      <div class="row2">
+        <div class="field">
+          <label class="field-label">Hero ka naam</label>
+          <input id="heroName" type="text" placeholder="Arjun, Zara, Milo..." />
+        </div>
+        <div class="field">
+          <label class="field-label">Setting / Jagah</label>
+          <input id="setting" type="text" placeholder="underwater Mumbai, jungle..." />
+        </div>
+      </div>
+
+      <div class="field full-field">
+        <label class="field-label">Plot — kya hoga kahani mein?</label>
+        <textarea id="plotInput" placeholder="jaise: hero ko apna khoya hua dost dhundhna hai lekin raaste mein ek talking tree milti hai jo raaz jaanti hai..."></textarea>
+      </div>
+
+      <div class="field full-field">
+        <label class="field-label">Moral of the story</label>
+        <input id="moralInput" type="text" placeholder="jaise: dosti sabse badi taakat hai, ya himmat se sab mumkin hai..." />
+      </div>
+
+      <button class="generate-btn" id="generateBtn" onclick="generateStory()">Spark the story</button>
+      <p class="err" id="err"></p>
+    </div>
+
+    <div class="loading-state" id="loadingState">
+      <p class="loading-text">Writing your adventure</p>
+    </div>
+
+    <div class="results-wrap" id="resultsWrap">
+      <div class="story-header">
+        <div class="story-pills" id="storyPills"></div>
+        <div class="story-title-el" id="storyTitleEl"></div>
+        <div class="story-body" id="storyBody"></div>
+        <div class="moral-box">
+          <div class="moral-eyebrow"><span class="moral-dot"></span>Moral of the story</div>
+          <div class="moral-text" id="moralDisplay"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="new-btn" id="newBtn" onclick="retellStory()">Alag andaaz mein sunao</button>
+        <button class="reset-btn" onclick="resetApp()">Nayi kahani</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = 'YAHAN_APNI_KEY_PASTE_KAR';
+    let lastHero='', lastSetting='', lastPlot='', lastMoral='';
+
+    function showErr(msg) {
+      const e = document.getElementById('err');
+      e.textContent = msg; e.style.display = 'block';
+    }
+
+    async function callGroq(hero, setting, plot, moral, retell) {
+      const prompt = retell
+        ? `Write a DIFFERENT version of a children's story (6-10 year olds) with the same elements but a fresh angle:
+Hero: ${hero} | Setting: ${setting} | Plot: ${plot} | Moral: ${moral}
+Respond ONLY with raw JSON, no markdown:
+{"title":"creative story title","story":"150-200 word story, different from before, fun and imaginative with clear beginning middle and happy ending"}`
+        : `Write a fun children's story (6-10 year olds) based on exactly these inputs:
+Hero: ${hero}
+Setting: ${setting}
+Plot: ${plot}
+Moral to weave in naturally: ${moral}
+
+Respond ONLY with raw JSON, no markdown, no backticks:
+{"title":"creative story title","story":"150-200 word story — follow the plot exactly, weave in the moral naturally at the end, clear beginning middle happy ending, simple fun language"}`;
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_KEY },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          max_tokens: 900,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error?.message || 'API error ' + res.status);
+      }
+
+      const data = await res.json();
+      const raw = data.choices[0].message.content.trim();
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('Could not parse response');
+      return JSON.parse(match[0]);
+    }
+
+    function renderStory(parsed, hero, setting, moral) {
+      const pills = document.getElementById('storyPills');
+      pills.innerHTML = '';
+      [hero, setting].forEach(t => {
+        const p = document.createElement('span');
+        p.className = 'pill'; p.textContent = t; pills.appendChild(p);
+      });
+
+      const titleEl = document.getElementById('storyTitleEl');
+      const words = (parsed.title || 'A Magical Adventure').split(' ');
+      const mid = Math.ceil(words.length / 2);
+      titleEl.innerHTML = words.slice(0, mid).join(' ') + ' <em>' + words.slice(mid).join(' ') + '</em>';
+
+      document.getElementById('storyBody').textContent = parsed.story || '';
+      document.getElementById('moralDisplay').textContent = moral;
+      document.getElementById('resultsWrap').style.display = 'block';
+    }
+
+    async function generateStory() {
+      const hero = document.getElementById('heroName').value.trim();
+      const setting = document.getElementById('setting').value.trim();
+      const plot = document.getElementById('plotInput').value.trim();
+      const moral = document.getElementById('moralInput').value.trim();
+
+      document.getElementById('err').style.display = 'none';
+      if (!hero) { showErr('Hero ka naam daalo!'); return; }
+      if (!setting) { showErr('Setting daalo!'); return; }
+      if (!plot || plot.length < 20) { showErr('Plot thoda detail mein likho!'); return; }
+      if (!moral) { showErr('Moral bhi daalo!'); return; }
+
+      lastHero = hero; lastSetting = setting; lastPlot = plot; lastMoral = moral;
+
+      document.getElementById('generateBtn').disabled = true;
+      document.getElementById('inputSection').style.opacity = '0.3';
+      document.getElementById('inputSection').style.pointerEvents = 'none';
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('resultsWrap').style.display = 'none';
+
+      try {
+        const parsed = await callGroq(hero, setting, plot, moral, false);
+        document.getElementById('loadingState').style.display = 'none';
+        renderStory(parsed, hero, setting, moral);
+      } catch (err) {
+        document.getElementById('loadingState').style.display = 'none';
+        showErr('Error: ' + err.message);
+      }
+
+      document.getElementById('generateBtn').disabled = false;
+      document.getElementById('inputSection').style.opacity = '1';
+      document.getElementById('inputSection').style.pointerEvents = 'auto';
+    }
+
+    async function retellStory() {
+      const btn = document.getElementById('newBtn');
+      btn.disabled = true; btn.textContent = 'Writing...';
+      document.getElementById('storyBody').style.opacity = '0.3';
+
+      try {
+        const parsed = await callGroq(lastHero, lastSetting, lastPlot, lastMoral, true);
+        renderStory(parsed, lastHero, lastSetting, lastMoral);
+        document.getElementById('storyBody').style.opacity = '1';
+      } catch (err) {
+        showErr('Error: ' + err.message);
+        document.getElementById('storyBody').style.opacity = '1';
+      }
+
+      btn.disabled = false; btn.textContent = 'Alag andaaz mein sunao';
+    }
+
+    function resetApp() {
+      ['heroName','setting','plotInput','moralInput'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('resultsWrap').style.display = 'none';
+      document.getElementById('generateBtn').disabled = false;
+      document.getElementById('inputSection').style.opacity = '1';
+      document.getElementById('inputSection').style.pointerEvents = 'auto';
+      document.getElementById('err').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
